@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chuyển đổi tứ phân ↔ ký tự</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    .container {
+      display: flex;
+      width: 95%;
+      margin-top: 20px;
+    }
+    .panel {
+      flex: 1;
+      border: 2px solid black;
+      margin: 0 10px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .title {
+      text-align: center;
+      color: blue;
+      margin: 5px;
+    }
+    textarea {
+      flex: 1;
+      margin: 5px;
+      resize: none;
+      font-size: 16px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px;
+    }
+    .output {
+      border: 1px solid black;
+      margin: 5px;
+      padding: 5px;
+      height: 60px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      background: #fafafa;
+    }
+    button {
+      padding: 3px 10px;
+      cursor: pointer;
+    }
+    .divider {
+      width: 2px;
+      background: black;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Bên trái -->
+    <div class="panel">
+      <div class="title">Nhập mã tứ phân để chuyển sang ký tự</div>
+      <div class="buttons">
+        <button onclick="runLeft()">Chạy</button>
+        <button onclick="copyText('outputLeft')">Copy</button>
+      </div>
+      <textarea id="inputLeft" placeholder="Nhập mã tứ phân, cách nhau bởi dấu cách..."></textarea>
+      <div id="outputLeft" class="output"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Bên phải -->
+    <div class="panel">
+      <div class="title">Nhập ký tự để chuyển đổi sang mã tứ phân</div>
+      <div class="buttons">
+        <button onclick="runRight()">Chạy</button>
+        <button onclick="copyText('outputRight')">Copy</button>
+      </div>
+      <textarea id="inputRight" placeholder="Nhập chuỗi ký tự..."></textarea>
+      <div id="outputRight" class="output"></div>
+    </div>
+  </div>
+
+  <script>
+    // Hàm đổi 1 số tứ phân (string) sang thập phân (int)
+    function tuPhanSangThapPhan(s) {
+      let result = 0;
+      for (let c of s) {
+        result = result * 4 + (c.charCodeAt(0) - '0'.charCodeAt(0));
+      }
+      return result;
+    }
+
+    // Bên trái: từ mã tứ phân → ký tự
+    function runLeft() {
+      const line = document.getElementById("inputLeft").value.trim();
+      const tokens = line.split(/\s+/);
+      let output = "";
+      for (let token of tokens) {
+        if (token.length > 0) {
+          const dec = tuPhanSangThapPhan(token);
+          output += String.fromCharCode(dec);
+        }
+      }
+      document.getElementById("outputLeft").innerText = output;
+    }
+
+    // Hàm đổi số thập phân sang tứ phân (string)
+    function toBase4(n) {
+      if (n === 0) return "0";
+      let res = "";
+      while (n > 0) {
+        res = String.fromCharCode('0'.charCodeAt(0) + (n % 4)) + res;
+        n = Math.floor(n / 4);
+      }
+      return res;
+    }
+
+    // Bên phải: từ ký tự → mã tứ phân
+    function runRight() {
+      const s = document.getElementById("inputRight").value;
+      let output = "";
+      for (let c of s) {
+        let ascii = c.charCodeAt(0);
+        output += toBase4(ascii) + " ";
+      }
+      document.getElementById("outputRight").innerText = output.trim();
+    }
+
+    // Copy
+    function copyText(id) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text);
+    }
+  </script>
+</body>
+</html>
