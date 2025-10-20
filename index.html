@@ -38,7 +38,7 @@
     }
     .buttons {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       margin: 5px;
     }
     .output {
@@ -51,7 +51,7 @@
       background: #fafafa;
     }
     button {
-      padding: 3px 10px;
+      padding: 5px 20px;
       cursor: pointer;
     }
     .divider {
@@ -66,9 +66,7 @@
     <div class="panel">
       <div class="title">Nhập mã tứ phân để chuyển sang ký tự</div>
       <div class="buttons">
-        <button onclick="runLeft()">Chạy</button>
-        <button onclick="pasteText('inputLeft')">Dán</button>
-        <button onclick="copyText('outputLeft')">Copy</button>
+        <button onclick="clickLeft()">Click</button>
       </div>
       <textarea id="inputLeft" placeholder="Nhập mã tứ phân..."></textarea>
       <div id="outputLeft" class="output"></div>
@@ -80,9 +78,7 @@
     <div class="panel">
       <div class="title">Nhập ký tự để chuyển đổi sang mã tứ phân</div>
       <div class="buttons">
-        <button onclick="runRight()">Chạy</button>
-        <button onclick="pasteText('inputRight')">Dán</button>
-        <button onclick="copyText('outputRight')">Copy</button>
+        <button onclick="clickRight()">Click</button>
       </div>
       <textarea id="inputRight" placeholder="Nhập chuỗi ký tự..."></textarea>
       <div id="outputRight" class="output"></div>
@@ -90,61 +86,64 @@
   </div>
 
   <script>
-    // Hàm đổi 1 số tứ phân (string) sang thập phân (int)
+    // Chuyển tứ phân sang thập phân
     function tuPhanSangThapPhan(s) {
       let result = 0;
-      for (let c of s) {
-        result = result * 4 + (c.charCodeAt(0) - '0'.charCodeAt(0));
-      }
+      for (let c of s) result = result * 4 + (c.charCodeAt(0) - 48);
       return result;
     }
 
-    // Bên trái: từ mã tứ phân → ký tự
-    function runLeft() {
-      const line = document.getElementById("inputLeft").value.trim();
-      const tokens = line.split(/\s+/);
-      let output = "";
-      for (let token of tokens) {
-        if (token.length > 0) {
-          const dec = tuPhanSangThapPhan(token);
-          output += String.fromCharCode(dec);
-        }
-      }
-      document.getElementById("outputLeft").innerText = output;
-    }
-
-    // Hàm đổi số thập phân sang tứ phân (string)
+    // Chuyển thập phân sang tứ phân
     function toBase4(n) {
       if (n === 0) return "0";
       let res = "";
       while (n > 0) {
-        res = String.fromCharCode('0'.charCodeAt(0) + (n % 4)) + res;
+        res = (n % 4) + res;
         n = Math.floor(n / 4);
       }
       return res;
     }
 
-    // Bên phải: từ ký tự → mã tứ phân
-    function runRight() {
-      const s = document.getElementById("inputRight").value;
-      let output = "";
-      for (let c of s) {
-        let ascii = c.charCodeAt(0);
-        output += toBase4(ascii) + " ";
+    // Bên trái: xử lý 3 bước (Dán → Chạy → Copy)
+    async function clickLeft() {
+      const input = document.getElementById("inputLeft");
+      const output = document.getElementById("outputLeft");
+      // Dán clipboard
+      const text = await navigator.clipboard.readText();
+      input.value = text.trim();
+
+      // Chạy chuyển đổi
+      const tokens = input.value.split(/\s+/);
+      let result = "";
+      for (let token of tokens) {
+        if (token) {
+          const dec = tuPhanSangThapPhan(token);
+          result += String.fromCharCode(dec);
+        }
       }
-      document.getElementById("outputRight").innerText = output.trim();
+      output.innerText = result;
+
+      // Copy kết quả
+      await navigator.clipboard.writeText(result);
     }
 
-    // Copy
-    function copyText(id) {
-      const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text);
-    }
-    // Hàm dán clipboard vào textarea
-    function pasteText(id) {
-      navigator.clipboard.readText().then(text => {
-        document.getElementById(id).value = text;
-      });
+    // Bên phải: xử lý 3 bước (Dán → Chạy → Copy)
+    async function clickRight() {
+      const input = document.getElementById("inputRight");
+      const output = document.getElementById("outputRight");
+      // Dán clipboard
+      const text = await navigator.clipboard.readText();
+      input.value = text.trim();
+
+      // Chạy chuyển đổi
+      let result = "";
+      for (let c of input.value) {
+        result += toBase4(c.charCodeAt(0)) + " ";
+      }
+      output.innerText = result.trim();
+
+      // Copy kết quả
+      await navigator.clipboard.writeText(result.trim());
     }
   </script>
 </body>
